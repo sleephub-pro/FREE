@@ -1,0 +1,175 @@
+local WindUI
+
+do
+    local ok, result = pcall(function()
+        return require("./src/Init")
+    end)
+    
+    if ok then
+        WindUI = result
+    else 
+        WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
+    end
+end
+
+function createPopup()
+    return WindUI:Popup({
+        Title = "Welcome to the WindUI!",
+        Icon = "bird",
+        Content = "การใช้สคลิปไม่ปลอดภัย ใช้อย่างระมัดระวังด้วยนะครับ",
+        Buttons = {
+            {
+                Title = "เข้าใจแล้ว",
+                Icon = "bird",
+            },
+        }
+    })
+end
+
+
+
+-- */  Window  /* --
+local Window = WindUI:CreateWindow({
+    Title = "SLEEP HUB PRO MAX",
+    Author = "by .ftgs • Footagesus",
+    Folder = "ftgshub",
+    Icon = "rbxassetid://121030902371363",
+    IconSize = 22*2,
+    NewElements = true,
+    --Size = UDim2.fromOffset(700,700),
+    
+    HideSearchBar = false,
+    
+    OpenButton = {
+        Title = " SLEEP HIB UI", -- can be changed
+        CornerRadius = UDim.new(1,0), -- fully rounded
+        StrokeThickness = 3, -- removing outline
+        Enabled = true, -- enable or disable openbutton
+        Draggable = true,
+        OnlyMobile = false,
+        
+        Color = ColorSequence.new( -- gradient
+            Color3.fromHex("#30FF6A"), 
+            Color3.fromHex("#e7ff2f")
+        )
+    },
+})
+
+
+
+
+
+
+
+
+
+
+local Tab = Window:Tab({
+    Title = "หนัาหลัก",
+    Icon = "bird", -- optional
+    Locked = false,
+})
+
+
+
+
+
+
+
+
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+
+-- ตัวแปรควบคุม Toggle
+local OrbToggle = false
+local OrbConnection
+
+local Toggle = Tab:Toggle({
+    Title = "Auto Collect Orbs",
+    Desc = "ดึง Orbs มาที่ตัว",
+    Icon = "bird",
+    Type = "Checkbox",
+    Value = false,
+    Callback = function(state)
+        OrbToggle = state
+
+        if state then
+            -- เริ่มทำงาน
+            OrbConnection = RunService.Heartbeat:Connect(function()
+                if not OrbToggle then return end
+
+                local character = player.Character
+                local hrp = character and character:FindFirstChild("HumanoidRootPart")
+                if not hrp then return end
+
+                for _, orb in pairs(workspace:WaitForChild("Orbs"):GetChildren()) do
+                    if orb:IsA("BasePart") then
+                        orb.CFrame = hrp.CFrame
+                    end
+                end
+
+                task.wait(0.01)
+            end)
+        else
+            -- หยุดทำงาน
+            if OrbConnection then
+                OrbConnection:Disconnect()
+                OrbConnection = nil
+            end
+        end
+    end
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- สร้างตัวแปรเก็บสถานะและการเชื่อมต่อ
+local axeSwingActive = false
+local axeSwingConnection = nil
+
+local Toggle = Tab:Toggle({
+    Title = "Toggle",
+    Desc = "Axe Swing Automation",
+    Icon = "bird",
+    Type = "Checkbox",
+    Value = false,
+    Callback = function(state)
+        axeSwingActive = state
+        
+        if state then
+            -- เริ่ม loop เมื่อเปิด
+            axeSwingConnection = game:GetService("RunService").Heartbeat:Connect(function()
+                game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("AxeSwing"):FireServer()
+                task.wait(0.01) -- หน่วงเวลา 0.01 วินาที
+            end)
+        else
+            -- หยุด loop เมื่อปิด
+            if axeSwingConnection then
+                axeSwingConnection:Disconnect()
+                axeSwingConnection = nil
+            end
+        end
+    end
+})
+
+
+
+
+
+
+
+
+
+
+
