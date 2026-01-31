@@ -4,7 +4,7 @@ local Luna = loadstring(game:HttpGet("https://raw.githubusercontent.com/Nebula-S
 local Window = Luna:CreateWindow({
 	Name = "SLEEP HUB PRO MAX", -- This Is Title Of Your Window
 	Subtitle = "A Gray Subtitle", -- A Gray Subtitle next To the main title.
-	LogoID = "82795327169782", -- The Asset ID of your logo. Set to nil if you do not have a logo for Luna to use.
+	LogoID = "113876946783161", -- The Asset ID of your logo. Set to nil if you do not have a logo for Luna to use.
 	LoadingEnabled = true, -- Whether to enable the loading animation. Set to false if you do not want the loading screen or have your own custom one.
 	LoadingTitle = "WELCOME TO SLEEP HUB PRO MAXe", -- Header for loading screen
 	LoadingSubtitle = "by SLEEP HUB", -- Subtitle for loading screen
@@ -474,7 +474,51 @@ local Toggle = Tab:CreateToggle({
 
 
 
+-- เก็บ Remote ไว้ก่อนเพื่อไม่ต้องหาซ้ำทุกครั้ง
+local Remote = game:GetService("ReplicatedStorage")
+    :WaitForChild("Packages")
+    :WaitForChild("_Index")
+    :WaitForChild("sleitnick_knit@1.5.1")
+    :WaitForChild("knit")
+    :WaitForChild("Services")
+    :WaitForChild("FightService")
+    :WaitForChild("RE")
+    :WaitForChild("GetTrophyEvent")
 
+local isRunning = false
+local loopThread = nil
+
+local Toggle = Tab:CreateToggle({
+    Name = "ออโต้ฟาร์มวิน",
+    Description = "ระวังค้าง!!",
+    CurrentValue = false,
+    Callback = function(Value)
+        isRunning = Value
+        
+        if Value then
+            -- เปิด Toggle -> เริ่มลูป
+            loopThread = task.spawn(function()
+                while isRunning do
+                    local success, err = pcall(function()
+                        Remote:FireServer()
+                    end)
+                    
+                    if not success then
+                        warn("Error: " .. tostring(err))
+                    end
+                    
+                    task.wait(0) -- ทำงานทุก 0.1 วินาที (ปรับได้)
+                end
+            end)
+        else
+            -- ปิด Toggle -> หยุดลูป (isRunning = false จะทำให้ while หยุดเอง)
+            if loopThread then
+                task.cancel(loopThread)
+                loopThread = nil
+            end
+        end
+    end
+}, "AutoTrophyToggle")
 
 
 
