@@ -533,41 +533,53 @@ local Toggle = Tab:CreateToggle({
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
-local TOGGLE_FILE = "SleepHub_Toggle.txt"
+-- ===================== CONFIG =====================
 local SCRIPT_URL = "https://raw.githubusercontent.com/sleephub-pro/SLRRP-HUBV1/refs/heads/main/SLEEP%20HUB%20PRO%20MAX"
 
--- ================== โหลดสถานะ Toggle ==================
-local savedToggle = true
-if isfile(TOGGLE_FILE) then
-    savedToggle = readfile(TOGGLE_FILE) == "true"
+-- ตัวแปร global ใช้จำสถานะข้ามเซิฟ
+getgenv().SLEEP_HUB_TOGGLE = getgenv().SLEEP_HUB_TOGGLE or false
+
+-- ===================== QUEUE ON TELEPORT =====================
+local function QueueScript()
+    local code = string.format([[
+        getgenv().SLEEP_HUB_TOGGLE = true
+        loadstring(game:HttpGet("%s"))()
+    ]], SCRIPT_URL)
+
+    if syn and syn.queue_on_teleport then
+        syn.queue_on_teleport(code)
+    elseif queue_on_teleport then
+        queue_on_teleport(code)
+    end
 end
 
--- ================== ถ้า Toggle เปิดไว้ → ให้รันหลังรีจอย / ย้ายเซิฟ ==================
-if savedToggle and queue_on_teleport then
-    queue_on_teleport([[
-        loadstring(game:HttpGet("]] .. SCRIPT_URL .. [["))()
-    ]])
-end
-
--- ================== Toggle UI ==================
+-- ===================== TOGGLE =====================
 local Toggle = Tab:CreateToggle({
     Name = "Toggle Example",
-    Description = "รันสคริปต์เมื่อรีจอยหรือย้ายเซิฟ",
-    CurrentValue = savedToggle,
+    Description = "จำสถานะ และรันเมื่อรีจอย / ย้ายเซิฟ",
+    CurrentValue = getgenv().SLEEP_HUB_TOGGLE,
     Callback = function(Value)
-        -- บันทึกสถานะ
-        writefile(TOGGLE_FILE, tostring(Value))
+        getgenv().SLEEP_HUB_TOGGLE = Value
 
         if Value then
-            -- ตั้งให้รันหลังย้ายเซิฟ / รีจอย
-            if queue_on_teleport then
-                queue_on_teleport([[
-                    loadstring(game:HttpGet("]] .. SCRIPT_URL .. [["))()
-                ]])
-            end
+            -- เปิดไว้เฉย ๆ ยังไม่รันทันที
+            QueueScript()
+            print("✅ Toggle เปิดแล้ว | จะรันเมื่อรีจอย / ย้ายเซิฟ")
+        else
+            print("❌ Toggle ปิดแล้ว")
         end
     end
 }, "Toggle")
+
+-- ===================== AUTO RESTORE (หลังรีจอย) =====================
+if getgenv().SLEEP_HUB_TOGGLE then
+    -- กรณีเพิ่งรีจอยเข้ามา และ Toggle เคยเปิดไว้
+    task.spawn(function()
+        loadstring(game:HttpGet(SCRIPT_URL))()
+    end)
+end
+
+
 
 
 
