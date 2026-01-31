@@ -534,7 +534,7 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
 -- ===================== CONFIG =====================
-local SCRIPT_URL = "https://raw.githubusercontent.com/sleephub-pro/SLRRP-HUBV1/refs/heads/main/SLEEP%20HUB%20PRO%20MAX"
+local SCRIPT_URL = "https://raw.githubusercontent.com/sleephub-pro/FREE/refs/heads/main/w"
 
 -- ตัวแปร global ใช้จำสถานะข้ามเซิฟ
 getgenv().SLEEP_HUB_TOGGLE = getgenv().SLEEP_HUB_TOGGLE or false
