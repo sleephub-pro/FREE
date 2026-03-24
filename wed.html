@@ -1,0 +1,124 @@
+import React, { useState, useEffect, useMemo } from 'react';
+
+// ไอเทมทั้งหมดที่ต้องการเช็ค
+const ITEM_LIST = [
+  "Item_Clan Reroll", "Item_Epic Chest", "Item_Common Chest",
+  "Item_Legendary Chest", "Item_Mythical Chest", "Item_Race Reroll",
+  "Item_Rare Chest", "Item_Tempest Relic", "Item_Aura Crate", "Item_Corruption Core"
+];
+
+// ข้อมูลจำลอง (Mock Data) เพื่อให้เห็นภาพการทำงานของเว็บ
+// ในการใช้งานจริง ข้อมูลนี้จะถูกดึงมาจาก API/Database
+const mockDatabase = {
+  "Player_Roblox123": {
+    "Item_Clan Reroll": 5, "Item_Epic Chest": 2, "Item_Common Chest": 10,
+    "Item_Legendary Chest": 1, "Item_Mythical Chest": 0, "Item_Race Reroll": 3,
+    "Item_Rare Chest": 4, "Item_Tempest Relic": 0, "Item_Aura Crate": 2, "Item_Corruption Core": 1
+  },
+  "ProGamer_TH": {
+    "Item_Clan Reroll": 12, "Item_Epic Chest": 0, "Item_Common Chest": 25,
+    "Item_Legendary Chest": 0, "Item_Mythical Chest": 1, "Item_Race Reroll": 8,
+    "Item_Rare Chest": 10, "Item_Tempest Relic": 2, "Item_Aura Crate": 0, "Item_Corruption Core": 0
+  }
+};
+
+export default function App() {
+  const [data, setData] = useState({});
+  const [activeTab, setActiveTab] = useState('individual'); // 'individual' | 'summary'
+
+  // โหลดข้อมูล (จำลองการดึงจาก API)
+  useEffect(() => {
+    // ตรงนี้คือจุดที่คุณจะเขียน fetch() เพื่อดึงข้อมูลจาก Database ของคุณ
+    setData(mockDatabase);
+  }, []);
+
+  // คำนวณยอดรวมไอเทมทั้งหมด (Requirement 3)
+  const aggregatedData = useMemo(() => {
+    const totals = {};
+    ITEM_LIST.forEach(item => totals[item] = 0);
+
+    Object.values(data).forEach(playerInventory => {
+      ITEM_LIST.forEach(item => {
+        if (playerInventory[item]) {
+          totals[item] += playerInventory[item];
+        }
+      });
+    });
+    return totals;
+  }, [data]);
+
+  return (
+    <div className="min-h-screen bg-gray-900 text-white p-6 font-sans">
+      <div className="max-w-6xl mx-auto">
+        <h1 className="text-3xl font-bold mb-8 text-blue-400 border-b border-gray-700 pb-4">
+          🎮 System Inventory Tracker
+        </h1>
+
+        {/* Tabs */}
+        <div className="flex space-x-4 mb-6">
+          <button 
+            onClick={() => setActiveTab('individual')}
+            className={`px-6 py-2 rounded-lg font-semibold transition-colors ${activeTab === 'individual' ? 'bg-blue-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}`}
+          >
+            📋 ข้อมูลรายบุคคล (แยกตาม ID)
+          </button>
+          <button 
+            onClick={() => setActiveTab('summary')}
+            className={`px-6 py-2 rounded-lg font-semibold transition-colors ${activeTab === 'summary' ? 'bg-green-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}`}
+          >
+            📦 สรุปไอเทมรวมทั้งหมด
+          </button>
+        </div>
+
+        {/* Tab Content: Individual */}
+        {activeTab === 'individual' && (
+          <div className="grid gap-6">
+            {Object.entries(data).map(([playerId, inventory]) => (
+              <div key={playerId} className="bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700">
+                <div className="flex items-center mb-4">
+                  <div className="bg-blue-500 w-10 h-10 rounded-full flex items-center justify-center font-bold text-xl mr-4">
+                    {playerId.charAt(0)}
+                  </div>
+                  <h2 className="text-xl font-bold text-blue-300">ID: {playerId}</h2>
+                </div>
+                
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                  {ITEM_LIST.map(item => (
+                    <div key={item} className="bg-gray-900 p-3 rounded-lg border border-gray-700 flex flex-col justify-between">
+                      <span className="text-xs text-gray-400 mb-1">{item.replace("Item_", "")}</span>
+                      <span className={`text-xl font-bold ${inventory[item] > 0 ? 'text-green-400' : 'text-gray-600'}`}>
+                        {inventory[item] || 0}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Tab Content: Summary */}
+        {activeTab === 'summary' && (
+          <div className="bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700">
+            <h2 className="text-xl font-bold text-green-300 mb-6 flex items-center">
+              <span className="mr-2">📊</span> จำนวนไอเทมรวมจากทุก ID ในระบบ
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+              {Object.entries(aggregatedData).map(([item, total]) => (
+                <div key={item} className="bg-gray-900 p-4 rounded-xl border border-gray-700 flex flex-col items-center text-center transform transition hover:scale-105">
+                  <span className="text-sm text-gray-400 mb-2">{item.replace("Item_", "")}</span>
+                  <div className="w-16 h-16 rounded-full border-4 border-gray-800 flex items-center justify-center mb-2 bg-gray-800 shadow-[0_0_15px_rgba(0,0,0,0.5)]">
+                    <span className={`text-2xl font-bold ${total > 0 ? 'text-green-400' : 'text-gray-600'}`}>
+                      {total}
+                    </span>
+                  </div>
+                  <span className="text-xs text-gray-500">ชิ้น</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
